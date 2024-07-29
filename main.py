@@ -1,4 +1,3 @@
-from audioop import rms
 from os import error
 import streamlit as st
 from scipy.signal import butter, filtfilt, detrend, find_peaks
