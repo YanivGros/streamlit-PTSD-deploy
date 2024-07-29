@@ -1,17 +1,11 @@
 from audioop import rms
-from enum import auto
-from operator import is_
 from os import error
-from fastapi.background import P
-from matplotlib.colors import Normalize
 import streamlit as st
 from scipy.signal import butter, filtfilt, detrend, find_peaks
 from scipy.stats import zscore
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.io as sio
-import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
