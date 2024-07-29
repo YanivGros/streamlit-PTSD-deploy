@@ -279,7 +279,8 @@ def main():
         Normalize = st.checkbox("Normalize", value=False)
 
     mat_contents = sio.loadmat(
-        rf"C:\Users\qywoe\OneDrive - weizmann.ac.il\Documents\ptsd_{chosen_id}_complete\Biopac_data\PTSD_{chosen_id}_session_FIX.mat"
+        rf'./PTSD_{chosen_id}_session_FIX.mat'
+        # rf"C:\Users\qywoe\OneDrive - weizmann.ac.il\Documents\ptsd_{chosen_id}_complete\Biopac_data\PTSD_{chosen_id}_session_FIX.mat"
     )
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
     res = process_ppg_signal(df["Pulse - PPG100C"])
