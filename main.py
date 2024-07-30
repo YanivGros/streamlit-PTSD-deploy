@@ -270,8 +270,8 @@ def interval_selector(df, threshold=0.01, fs=2000, averaging_factor=100_00):
 
 def main():
 
-    id_list = [17821001, 17821002]
-    chosen_id = 17821001
+    id_list = [17821001, 17821004,17821007,17821008,17821009]
+    # chosen_id = 17821001
     with st.sidebar:
         chosen_id = st.selectbox("Select Participant", id_list)
         # present_title = st.checkbox("Present title", value=False)
@@ -279,7 +279,7 @@ def main():
         Normalize = st.checkbox("Normalize", value=False)
 
     mat_contents = sio.loadmat(
-        rf'./PTSD_{chosen_id}_session_FIX.mat'
+        rf'Data/PTSD_{chosen_id}_session_FIX.mat'
         # rf"C:\Users\qywoe\OneDrive - weizmann.ac.il\Documents\ptsd_{chosen_id}_complete\Biopac_data\PTSD_{chosen_id}_session_FIX.mat"
     )
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
