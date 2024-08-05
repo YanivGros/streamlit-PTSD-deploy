@@ -1,4 +1,5 @@
-from os import error
+import os
+import re
 import streamlit as st
 from scipy.signal import butter, filtfilt, detrend, find_peaks
 from scipy.stats import zscore
@@ -267,19 +268,56 @@ def interval_selector(df, threshold=0.01, fs=2000, averaging_factor=100_00):
 
     return intervals
 
+def extract_ids_from_dir(directory):
+    ids = []
+    for entry in os.listdir(directory):
+        match = re.match(r'ptsd_(\d+)_complete', entry)
+        if match:
+            ids.append(match.group(1))
+    return ids
+
+def list_files_for_id(directory, id):
+    files = []
+    id_dir = f'ptsd_{id}_complete'
+    biopac_dir = os.path.join(directory, id_dir, 'Biopac_data')
+    if os.path.exists(biopac_dir):
+        for file in os.listdir(biopac_dir):
+            files.append(os.path.join(biopac_dir, file))
+    return files
 
 def main():
-
-    id_list = [17821001, 17821004, 17821007, 17281008, 17821009]
-    # chosen_id = 17821001
+    import os
+    import re
+    root_directory = r'D:\BIOMARKER'
+    id_list = extract_ids_from_dir(root_directory)
     with st.sidebar:
         chosen_id = st.selectbox("Select Participant", id_list)
+        is_tos = st.checkbox("TOS", value=False)
         # present_title = st.checkbox("Present title", value=False)
         is_subplots = st.checkbox("Subplots", value=False)
         Normalize = st.checkbox("Normalize", value=False)
-
+    file_list = list_files_for_id(root_directory, chosen_id)
+    # for file in file_list:
+    dir_file_name_path = {}
+    for file in file_list:
+        file_name = file.split("\\")[-1][:-4]
+        dir_file_name_path[file_name] = file
+    print(f"dir_file_name_path: {dir_file_name_path}")
+    with st.sidebar:
+        
+        file_name = st.selectbox("Select File", dir_file_name_path.keys())
+        file_path = dir_file_name_path[file_name]
+    # for id in id_list:
+        # files = list_files_for_id(root_directory, id)
+        # print(f"Files for ID {id}:")
+        # for file in files:
+        
+    # file_path  = D:\BIOMARKER\ptsd_{chosen_id}_complete\Biopac_data\
+    # file_path = f"D:\BIOMARKER\ptsd_{chosen_id}_complete\Biopac_data\PTSD_{chosen_id}_session_{'TOS' if  is_tos else 'FIX'}.mat"
+    # print(f"file_path: {file_path}")
+    # file_path = rf"Data/PTSD_{chosen_id}_session_{'FIX' if  is_fix else 'TOS'}.mat"
     mat_contents = sio.loadmat(
-        rf"Data/PTSD_{chosen_id}_session_FIX.mat"
+        file_path
         # rf"C:\Users\qywoe\OneDrive - weizmann.ac.il\Documents\ptsd_{chosen_id}_complete\Biopac_data\PTSD_{chosen_id}_session_FIX.mat"
     )
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
