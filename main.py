@@ -80,7 +80,6 @@ def process_ppg_signal(
     )
 
     # Calculate moving window average from the center of the window
-    # time_diffs_avg = np.array([np.mean(time_diffs_without_outliers[i-half_window:i+half_window+1]) for i in range(half_window, len(time_diffs_without_outliers) - half_window)])
     time_diffs_avg = np.array(
         [
             np.mean(
@@ -113,7 +112,6 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
             vertical_spacing=0.01,
         )
         fig.add_trace(
-            # px.scatter(df_avrage, x=df_avrage.index, y=df_avrage["GSR - EDA100C-MRI"],render_mode="webgl"),
             go.Scattergl(
                 x=df_avrage.index,
                 y=df_avrage["GSR - EDA100C-MRI"],
@@ -123,14 +121,12 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
             row=1,
             col=1,
         )
-        # add HRV plot
         fig.add_trace(
             go.Scattergl(x=HR_df.index, y=HR_df["HRV"], mode="lines", name="HRV"),
             row=2,
             col=1,
         )
 
-        # add PPG plot
         fig.add_trace(
             go.Scattergl(
                 x=df_avrage.index,
@@ -141,13 +137,11 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
             row=3,
             col=1,
         )
-        # add HR plot
         fig.add_trace(
             go.Scattergl(x=HR_df.index, y=HR_df["HR"], mode="lines", name="HR"),
             row=4,
             col=1,
         )
-        # add ECG plot
         fig.add_trace(
             go.Scattergl(
                 x=df_avrage.index,
@@ -170,26 +164,18 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
         )
     else:
         fig = go.Figure()
-        # add gsr plot
         fig.add_trace(
-            # px.scatter(df_avrage, x=df_avrage.index, y=df_avrage["GSR - EDA100C-MRI"],render_mode="webgl"),
             go.Scattergl(
                 x=df_avrage.index,
                 y=df_avrage["GSR - EDA100C-MRI"],
                 mode="lines",
                 name="GSR",
             ),
-            # row=1,
-            # col=1,
         )
-        # add HRV plot
         fig.add_trace(
             go.Scattergl(x=HR_df.index, y=HR_df["HRV"], mode="lines", name="HRV"),
-            # row=2,
-            # col=1,
         )
 
-        # add PPG plot
         fig.add_trace(
             go.Scattergl(
                 x=df_avrage.index,
@@ -197,16 +183,10 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
                 mode="lines",
                 name="PPG",
             ),
-            # row=3,
-            # col=1,
         )
-        # add HR plot
         fig.add_trace(
             go.Scattergl(x=HR_df.index, y=HR_df["HR"], mode="lines", name="HR"),
-            # row=4,
-            # col=1,
         )
-        # add ECG plot
         fig.add_trace(
             go.Scattergl(
                 x=df_avrage.index,
@@ -214,8 +194,6 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
                 mode="lines",
                 name="ECG",
             ),
-            # row=5,
-            # col=1,
         )
         fig.add_trace(
             go.Scattergl(
@@ -224,8 +202,6 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
                 mode="lines",
                 name="Trig",
             ),
-            # row=6,
-            # col=1,
         )
     for interval in intervals:
         fig.add_vrect(
@@ -235,12 +211,7 @@ def plot_helper(HR_df, df_avrage, intervals, is_subplots=False, title=""):
             opacity=0.25,
             line_width=0,
         )
-    # fig.add_vrect(x0="0", x1="1",
-    #               annotation_text="decline", annotation_position="top left",
-    #               fillcolor="green", opacity=0.25, line_width=0)
-    # fig.update_layout(subplot_titles=titles)
     fig.update_layout(
-        # height=1200, width=800,
         autosize=True,
         title_text=title,
     )
@@ -253,7 +224,7 @@ def interval_selector(df, threshold=0.01, fs=2000, averaging_factor=100_00):
     df_avrage.index = np.linspace(0, len(df) / (fs * 60), len(df_avrage))
     data = df_avrage["Trig MRI - Custom, AMI / HLT - A 6"]
     # Find indices where data is larger than 0.1
-    threshold = data.mean() 
+    threshold = data.mean()
     indices = np.where(data > threshold)[0]
 
     # Find intervals of consecutive indices
@@ -313,7 +284,7 @@ def main():
         Normalize = st.checkbox("Normalize", value=False)
     mat_contents = sio.loadmat(file_path)
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
-    res = process_ppg_signal(df["Pulse - PPG100C"])
+    res = process_ppg_signal(df["Pulse - PPG100C"],window_size=60)
     HR_df = pd.DataFrame(
         {"HRV": res["time_diffs_sd"], "HR": res["time_diffs_avg"]},
         index=res["valley_times"][:-1] / 60,
