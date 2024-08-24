@@ -267,14 +267,61 @@ def list_files_for_id(directory, id):
     return files
 
 
+def get_files_from_aws(id_aws, key_aws, bucket_name="assaf-harofeh"):
+    import boto3
+    
+    s3 = boto3.client(
+        "s3",
+        region_name="us-east-1",  # US East (N. Virginia)
+        aws_access_key_id=id_aws,
+        aws_secret_access_key=key_aws,
+    )
+    response = s3.list_objects_v2(Bucket=bucket_name)
+    files = []
+    for content in response.get("Contents", []):
+        files.append(content["Key"])
+    return files
+def extract_id_from_path(file_path):
+    # Assuming the ID is the part after 'ptsd_' and before the next '_'
+    parts = file_path.split('/')
+    for part in parts:
+        if part.startswith('ptsd_'):
+            return part.split('_')[1]
+    return None
+
+def create_id_file_dict(file_list):
+    id_file_dict = {}
+    for file in file_list:
+        id = extract_id_from_path(file)
+        if id:
+            if id not in id_file_dict:
+                id_file_dict[id] = []
+            id_file_dict[id].append(file)
+    return id_file_dict
+
+# Example usage
+def get_data_from_aws(id_aws, key_aws, file_path, bucket_name="assaf-harofeh"):
+    import boto3
+    import io
+    
+    s3 = boto3.client(
+        "s3",
+        region_name="us-east-1",  # US East (N. Virginia)
+        aws_access_key_id=id_aws,
+        aws_secret_access_key=key_aws,
+    )
+    obj = s3.get_object(Bucket=bucket_name, Key=file_path)
+    return sio.loadmat(io.BytesIO(obj["Body"].read()))
+
 def main():
-    root_directory = r"D:\BIOMARKER"
-    id_list = extract_ids_from_dir(root_directory)
+    id_aws = st.secrets["ID_AWS"]
+    key_aws = st.secrets["KEY_AWS"]
+    files = get_files_from_aws(id_aws, key_aws)
+    id_file_dict = create_id_file_dict(files)
     with st.sidebar:
-        chosen_id = st.selectbox("Select Participant", id_list)
-        file_list = list_files_for_id(root_directory, chosen_id)
+        chosen_id = st.selectbox("Select Participant", id_file_dict.keys())
         dir_file_name_path = {}
-        for file in file_list:
+        for file in id_file_dict[chosen_id]:
             file_name = file.split("\\")[-1][:-4]
             file_name = extract_session_suffix(file_name)
             dir_file_name_path[file_name] = file
@@ -282,9 +329,9 @@ def main():
         file_path = dir_file_name_path[file_name]
         is_subplots = st.checkbox("Subplots", value=False)
         Normalize = st.checkbox("Normalize", value=False)
-    mat_contents = sio.loadmat(file_path)
+    mat_contents = get_data_from_aws(id_aws,key_aws, file_path)
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
-    res = process_ppg_signal(df["Pulse - PPG100C"],window_size=60)
+    res = process_ppg_signal(df["Pulse - PPG100C"], window_size=60)
     HR_df = pd.DataFrame(
         {"HRV": res["time_diffs_sd"], "HR": res["time_diffs_avg"]},
         index=res["valley_times"][:-1] / 60,
