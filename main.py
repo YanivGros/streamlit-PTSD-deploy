@@ -1,5 +1,6 @@
 import os
 import re
+import boto3
 import streamlit as st
 from scipy.signal import butter, filtfilt, detrend, find_peaks
 from scipy.stats import zscore
@@ -301,8 +302,6 @@ def create_id_file_dict(file_list):
 
 # Example usage
 def get_data_from_aws(id_aws, key_aws, file_path, bucket_name="assaf-harofeh"):
-    import boto3
-    import io
     
     s3 = boto3.client(
         "s3",
