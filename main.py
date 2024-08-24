@@ -271,7 +271,7 @@ def list_files_for_id(directory, id):
 
 def get_files_from_aws(id_aws, key_aws, bucket_name="assaf-harofeh"):
     import boto3
-    
+
     s3 = boto3.client(
         "s3",
         region_name="us-east-1",  # US East (N. Virginia)
@@ -283,13 +283,16 @@ def get_files_from_aws(id_aws, key_aws, bucket_name="assaf-harofeh"):
     for content in response.get("Contents", []):
         files.append(content["Key"])
     return files
+
+
 def extract_id_from_path(file_path):
     # Assuming the ID is the part after 'ptsd_' and before the next '_'
-    parts = file_path.split('/')
+    parts = file_path.split("/")
     for part in parts:
-        if part.startswith('ptsd_'):
-            return part.split('_')[1]
+        if part.startswith("ptsd_"):
+            return part.split("_")[1]
     return None
+
 
 def create_id_file_dict(file_list):
     id_file_dict = {}
@@ -301,9 +304,10 @@ def create_id_file_dict(file_list):
             id_file_dict[id].append(file)
     return id_file_dict
 
+
 # Example usage
 def get_data_from_aws(id_aws, key_aws, file_path, bucket_name="assaf-harofeh"):
-    
+
     s3 = boto3.client(
         "s3",
         region_name="us-east-1",  # US East (N. Virginia)
@@ -313,11 +317,16 @@ def get_data_from_aws(id_aws, key_aws, file_path, bucket_name="assaf-harofeh"):
     obj = s3.get_object(Bucket=bucket_name, Key=file_path)
     return sio.loadmat(io.BytesIO(obj["Body"].read()))
 
+
+df_scores = pd.read_csv("./CAPS.csv")
+
+
 def main():
     id_aws = st.secrets["ID_AWS"]
     key_aws = st.secrets["KEY_AWS"]
     files = get_files_from_aws(id_aws, key_aws)
     id_file_dict = create_id_file_dict(files)
+    chosen_id = None
     with st.sidebar:
         chosen_id = st.selectbox("Select Participant", id_file_dict.keys())
         dir_file_name_path = {}
@@ -329,7 +338,12 @@ def main():
         file_path = dir_file_name_path[file_name]
         is_subplots = st.checkbox("Subplots", value=False)
         Normalize = st.checkbox("Normalize", value=False)
-    mat_contents = get_data_from_aws(id_aws,key_aws, file_path)
+    cap = df_scores[df_scores["ID"] == int(chosen_id)]
+    # print(cap)
+    ptsd_score_to_text = {0: "No PTSD", 1: "PTSD", 2: "Borderline"}
+    title = f"CAPS Score: {cap['CAPS'].values[0]}, {ptsd_score_to_text[cap['PTSD'].values[0]]}"
+    st.title(title)
+    mat_contents = get_data_from_aws(id_aws, key_aws, file_path)
     df = pd.DataFrame(mat_contents["data"], columns=mat_contents["labels"])
     res = process_ppg_signal(df["Pulse - PPG100C"], window_size=60)
     HR_df = pd.DataFrame(
