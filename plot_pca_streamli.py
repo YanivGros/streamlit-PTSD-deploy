@@ -19,6 +19,9 @@ st.title("PTSD Analysis ")
 st.write(
     "This app performs a PCA analysis and identifies important features in the BIOPACK data."
 )
+st.warning(
+    "This is still a work in progress, please feel free to reach out to me if you have any questions or suggestions"
+)
 with st.sidebar:
     Normalize = st.checkbox("Normalize", value=True)
     if Normalize:
@@ -207,7 +210,7 @@ st.plotly_chart(fig)
 st.header("Feature Importance")
 st.markdown(
     """
-    There are many methods to assess feature importance, and we have selected a few that seemed most relevant for our analysis.
+    There are many methods to assess feature importance, Here are a few that seemed most relevant for our analysis.
     In this section, we will use:
     * Lasso regression
     * SelectKBest with f_classif
@@ -352,3 +355,4 @@ st.write(feature_importance_rf)
 # print(selected_features.tolist())
 
 # feature_importance[['Feature', 'Coefficient']]
+
