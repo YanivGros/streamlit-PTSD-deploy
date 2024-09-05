@@ -207,7 +207,7 @@ st.plotly_chart(fig)
 st.header("Feature Importance")
 st.markdown(
     """
-    Feature importance is a measure of the contribution of each feature to the model's prediction.
+    There are many methods to assess feature importance, and we have selected a few that seemed most relevant for our analysis.
     In this section, we will use:
     * Lasso regression
     * SelectKBest with f_classif
